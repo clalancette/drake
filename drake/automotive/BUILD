@@ -175,6 +175,25 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "chris_sim_lcm",
+    srcs = [
+        "chris_sim_lcm.cc",
+        "car_sim_lcm_common.cc",
+        "car_sim_lcm_common.h",
+    ],
+    data = [
+        ":models",
+    ],
+    deps = [
+        ":automotive_simulator",
+        "//drake/common:text_logging_gflags",
+        "//drake/multibody:rigid_body_tree_construction",
+        "//drake/multibody/rigid_body_plant",
+        "//drake/systems/controllers:pid_controlled_system",
+    ],
+)
+
 py_binary(
     name = "steering_command_driver",
     srcs = ["steering_command_driver.py"],
@@ -222,10 +241,24 @@ genrule(
     tools = ["//drake/automotive/maliput/utility:yaml_to_obj"],
 )
 
+genrule(
+    name = "road_genrule",
+    srcs = ["models/road.yaml"],
+    outs = ["models/road.obj"],
+    cmd = " ".join([
+        "$(location //drake/automotive/maliput/utility:yaml_to_obj)",
+        "--yaml_file '$<'",
+        "--obj_dir `dirname '$@'`",
+        "--obj_file `basename '$@' .obj`",
+    ]),
+    tools = ["//drake/automotive/maliput/utility:yaml_to_obj"],
+)
+
 filegroup(
     name = "models",
     srcs = glob(["models/**"]) + [
         "models/speed_bump/speed_bump.obj",
+        "models/road.obj",
     ],
 )
 
